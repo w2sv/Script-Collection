@@ -14,7 +14,7 @@ if not os.path.isdir(destDir):
 	os.makedirs(destDir)
 # if already existent retrieve latest cropImgInd
 else:
-	if len(os.listdir(destDir))
+	if len(os.listdir(destDir)):
 		filenames = [file[:file.rfind('.')] for file in os.listdir(destDir)]
 		latestFileInd = int(sorted(filenames)[-1][-1]) + 1
 
@@ -42,14 +42,14 @@ for fileInd, file in enumerate(os.listdir(croppingDir)):
 				sliceInds.append(tuple(currIndList))
 				currIndList = []
 	
-	sliceHeightList = list(starmap(lambda a,b: np.abs(a-b),sliceInds))
+	sliceHeightList = list(starmap(lambda a, b: np.abs(a-b), sliceInds))
 	maxHeightInd = np.argmax(sliceHeightList)
 	maxGapTuple = sliceInds[maxHeightInd]
 
 	# save cropped image if surpassing 1/4 of original image height
 	if sliceHeightList[maxHeightInd] > (len(arr) / 4.0):
 		croppedImg = arr[maxGapTuple[0]+1:maxGapTuple[1]]
-		cv2.imwrite(os.path.join(destDir,f'cropped{latestFileInd}.png'),croppedImg)
+		cv2.imwrite(os.path.join(destDir, f'cropped{latestFileInd}.png'), croppedImg)
 		latestFileInd += 1
 
 print(f"cropped {len(os.listdir(destDir))-oldDirSize} out of {len(os.listdir(croppingDir))} images")

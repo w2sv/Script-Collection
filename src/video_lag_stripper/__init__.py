@@ -1,4 +1,4 @@
-""" Script stripping consecutive frames of insufficient rate of pixel change of passed video
+""" Strips consecutive frames of insufficient rate of pixel change of passed video
     and writing the thus resulting one to the video source path with a indicating file name 
     extension marking it as the lag stripped file. The original video will remain untouched.
     Video audio will not be passed along to the delagged file. 
@@ -28,7 +28,7 @@ def consecutive_frames_of_insufficient_rate_of_change_stripped(video_capture: cv
     distinct_frames = []
 
     i, p_bar = 0, tqdm(total=n_frames_original)
-    while(True):
+    while True:
         i += 1
 
         p_bar.set_description(f'Processing frame {i}')
@@ -89,21 +89,16 @@ def write_video(frames: List[np.ndarray], fps: int, write_path: str):
 
 
 if __name__ == '__main__':
-    import argparse
+    from src.utils import parse_args
 
-    # parse path from command option
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--path', type=str, help='path to the video file whose smoothness ought to be increased')
-
-    args = parser.parse_args()
-    file_path = args.path
+    file_path = parse_args(('-p', '--path', str, 'path to the video file whose smoothness ought to be increased')).path
 
     # provide video capture, retrieve/compute variables
     video_capture = cv2.VideoCapture(file_path)
     
     n_frames_original = int(video_capture.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = video_capture.get(cv2.CAP_PROP_FPS)
-    print(f'Original fps: {original_fps}')
+    print(f'Original fps: {fps}')
 
     # remove consecutive frames of insufficient rate of change
     distinct_consecutive_frames = consecutive_frames_of_insufficient_rate_of_change_stripped(video_capture)
