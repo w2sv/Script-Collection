@@ -91,7 +91,9 @@ def write_video(frames: List[np.ndarray], fps: int, write_path: str):
 if __name__ == '__main__':
     from src.utils import parse_args
 
-    file_path = parse_args(('-p', '--path', str, 'path to the video file whose smoothness ought to be increased')).path
+    file_path = parse_args(
+        ('-p', '--path', str, 'path to the video file whose smoothness ought to be increased', None)
+    ).path
 
     # provide video capture, retrieve/compute variables
     video_capture = cv2.VideoCapture(file_path)

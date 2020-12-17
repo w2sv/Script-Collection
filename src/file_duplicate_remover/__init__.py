@@ -119,19 +119,14 @@ def _relative_path(absolute_path: str) -> str:
 if __name__ == '__main__':
     from src.utils import parse_args
 
-    FILE_EXTENSIONS_2_CONSIDER = ['wma', 'MP3', 'mp3', 'm4a', 'wav']
-
     # parse args
     args = parse_args(
-        ('-r', '--rootdir', str, 'root directory whose comprised file duplicates shall be removed'),
-        ('-f', '--fileextensions', str, 'extentions of files who shall be considered')
+        ('-r', '--rootdir', str, 'root directory whose comprised file duplicates shall be removed', None),
+        ('-f', '--fileextensions', str, 'extentions of files who shall be considered', 'wma, MP3, mp3, m4a, wav')
     )
     
     ROOT_DIR_PATH = args.rootdir
-
-    if args.fileextensions:
-        FILE_EXTENSIONS_2_CONSIDER = args.fileextensions.replace(' ', '').split(',')
-    FILE_EXTENSIONS_2_CONSIDER = set(FILE_EXTENSIONS_2_CONSIDER)
+    FILE_EXTENSIONS_2_CONSIDER = set(args.fileextensions.replace(' ', '').split(','))
 
     # remove duplicates
     removed_file_sizes = list(get_reference_file(dir_path=ROOT_DIR_PATH))
