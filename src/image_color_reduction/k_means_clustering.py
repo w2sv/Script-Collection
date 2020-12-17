@@ -18,7 +18,10 @@ def ordinal_number(number: int) -> str:
 class KMeansClusterer:
     _Clusters = List[List[np.ndarray]]
 
-    def __init__(self, data: Sequence[np.ndarray], n_clusters: int, max_iterations=20):
+    def __init__(self, data: Sequence[np.ndarray], n_clusters: int, max_iterations=20, seed: Optional[int] = None):
+        if seed:
+            np.random.seed(seed)
+
         self._data: Sequence[np.ndarray] = data
         self._n_clusters: int = n_clusters
         self._recursion_threshold: int = max_iterations
@@ -34,18 +37,23 @@ class KMeansClusterer:
         np.random.shuffle(indices)
         return np.array_split(np.array(data)[indices[:n]], n, axis=0)
 
-    def __call__(self, previous_clusters: Optional[_Clusters] = None) -> _Clusters:
-        new_clusters = self._get_clusters()
-        self._adjust_centroids(new_clusters)
+    def __call__(self, _previous_clusters: Optional[_Clusters] = None) -> _Clusters:
+        if _previous_clusters is not None:
+            self._adjust_centroids(_previous_clusters)
 
-        if previous_clusters is None or (self._clusters_divergent(previous_clusters, new_clusters) and self.n_conducted_iterations < self._recursion_threshold):
+        new_clusters = self._cluster()
+
+        if _previous_clusters is None or (self._clusters_divergent(_previous_clusters, new_clusters) and self.n_conducted_iterations < self._recursion_threshold):
             return self.__call__(new_clusters)
 
-        print(f'Finished after {self.n_conducted_iterations + 1} iterations')
+        print(f'Finished after {self.n_conducted_iterations} iterations')
         return new_clusters
 
-    def _get_clusters(self) -> _Clusters:
-        self._progress_bar.set_description(f'Conducting {ordinal_number(self.n_conducted_iterations + 1)} iteration', refresh=True)
+    def _adjust_centroids(self, clusters: _Clusters):
+        self._centroids = [np.mean(cluster, axis=0) for cluster in clusters]
+
+    def _cluster(self) -> _Clusters:
+        self._progress_bar.set_description(f'Conducting {ordinal_number(self.n_conducted_iterations + 1)} clustering iteration', refresh=True)
 
         clusters = [[] for _ in range(self._n_clusters)]
         for data_point in self._data:
@@ -57,9 +65,6 @@ class KMeansClusterer:
 
         return clusters
 
-    def _adjust_centroids(self, clusters: _Clusters):
-        self._centroids = [np.mean(cluster, axis=0) for cluster in clusters]
-
     @staticmethod
     def _clusters_divergent(previous_clusters: _Clusters, new_clusters: _Clusters) -> bool:
         for previous_cluster_i, new_cluster_i in itertools.zip_longest(previous_clusters, new_clusters):
@@ -69,11 +74,13 @@ class KMeansClusterer:
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
+    pass
 
-    example_data = np.random.randint(0, 100, (50, 2))
-    clusterer = KMeansClusterer(example_data, n_clusters=3, max_iterations=5)
-    clusters = clusterer.__call__()
+    # import matplotlib.pyplot as plt
+
+    # example_data = np.random.randint(0, 100, (50, 2))
+    # clusterer = KMeansClusterer(example_data, n_clusters=3, max_iterations=5)
+    # clusters = clusterer.__call__()
 
     # for cluster in clusters:
     #     plt.scatter(*cluster.T)
