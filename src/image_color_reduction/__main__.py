@@ -1,3 +1,11 @@
+""" Reduce quantity of colors present in image by means of kMeans clustering the entirety
+	of rgb values present in the original image and subsequently assigning the image
+	pixels with the cluster means they ended up in.
+	Original file will be left untouched.
+
+	Refer to the bottom of this file in order to read up on the passable cli options. """
+
+
 from typing import Tuple, List
 import os
 
@@ -10,8 +18,14 @@ from src.image_color_reduction.k_means_clustering import KMeansClusterer
 
 
 class IndexedPixel(np.ndarray):
-	def __new__(cls, array_like: np.ndarray, indices: Tuple[int, int]):
-		obj = array_like.view(cls)
+	""" Serving the convenient storage of the pixel location indices """
+
+	def __new__(cls, rgb_values: np.ndarray, indices: Tuple[int, int]):
+		""" Args:
+				rgb_values: ndarray of shape (3, )
+				indices: Tuple[row, column] """
+
+		obj = rgb_values.view(cls)
 		obj.indices = indices
 		return obj
 
@@ -34,7 +48,10 @@ def get_indexed_pixels(image: np.ndarray) -> List[IndexedPixel]:
 
 
 @kick_off_message_displayer('Restoring image...')
-def restored_image(pixel_clusters: List[IndexedPixel], image_shape: Tuple[int]) -> np.ndarray:
+def restore_image(pixel_clusters: List[IndexedPixel], image_shape: Tuple[int]) -> np.ndarray:
+	""" Assign image of equal shape as the original one with the means of
+		the rgb value clusters the respective pixels ended up in """
+
 	image = np.zeros(shape=image_shape)
 
 	for pixel_cluster in tqdm(pixel_clusters):
@@ -47,50 +64,54 @@ def restored_image(pixel_clusters: List[IndexedPixel], image_shape: Tuple[int]) 
 
 
 def get_write_path(original_path: str, n_clusters: int, conducted_iterations: int) -> str:
+	""" Returns:
+			altered image file name being extended by n_clusters and conducted_iterations,
+			prepended either by dir path original image residing in if write dir path not
+			set, or write dir path otherwise """
+
 	extension_stripped_path, extension = os.path.splitext(original_path)
 	suffix = f'_{n_clusters}clusters_{conducted_iterations}iterations' + extension
 
-	if write_dir_path is None:
+	if WRITE_DIR_PATH is None:
 		return extension_stripped_path + suffix
 
 	file_name = original_path.split(os.sep)[-1]
-	return os.path.join(write_dir_path, file_name + suffix)
+	return os.path.join(WRITE_DIR_PATH, file_name + suffix)
 
 
 def main(image_file_path: str):
-	# open, sequentialize image
+	# open image and get indexed, sequentialized pixels
 	original_image = cv2.imread(image_file_path)
 	indexed_pixels = get_indexed_pixels(original_image)
 
-	# cluster
-	clusterer = KMeansClusterer(indexed_pixels, n_clusters, max_iterations=max_iterations, seed=seed)
+	# cluster rgb values being present in image
+	clusterer = KMeansClusterer(indexed_pixels, N_CLUSTERS, max_iterations=MAX_ITERATIONS, seed=SEED)
 	clusters = clusterer.__call__()
 
 	# write color reduced image
-	write_path = get_write_path(image_file_path, n_clusters=n_clusters, conducted_iterations=clusterer.n_conducted_iterations)
-	cv2.imwrite(write_path, restored_image(clusters, image_shape=original_image.shape))
+	write_path = get_write_path(image_file_path, n_clusters=N_CLUSTERS, conducted_iterations=clusterer.n_conducted_iterations)
+	cv2.imwrite(write_path, restore_image(clusters, image_shape=original_image.shape))
 	print(f'Saved color reduced image to {write_path}')
 
 
 if __name__ == '__main__':
-	from src.utils import parse_args
-	from src import run
+	from src.utils import parse_args, run
 
 	args = parse_args(
 		('-p', '--path', str, 'image path', None),
-		('-d', '--dir', str, 'directory path', None),
 		('-c', '--clusters', int, 'number of desired colors image colors will be reduced to', 10),
 		('-m', '--maxiterations', int, 'maximal amount of conducted kMeans clustering iterations', 5),
 		('-s', '--seed', int, 'rng seed, affects centroid initialization', None),
-		('-w', '--writedirpath', str, 'directory path resulting image shall be written to, defaults to dir original image residing at', None)
+		('-w', '--writedirpath', str, 'directory path resulting image shall be written to, defaults to dir original image residing at', None),
+		include_dir_argument=True
 	)
 
 	# parse args
-	file_path = args.path
-	directory_path = args.dir
-	n_clusters = args.clusters
-	max_iterations = args.maxiterations
-	seed = args.seed
-	write_dir_path = args.writedirpath
+	FILE_PATH = args.path
+	DIRECTORY_PATH = args.dir
+	N_CLUSTERS = args.clusters
+	MAX_ITERATIONS = args.maxiterations
+	SEED = args.seed
+	WRITE_DIR_PATH = args.writedirpath
 
-	run.__call__(main, file_path=file_path, directory_path=directory_path)
+	run(main, file_path=FILE_PATH, directory_path=DIRECTORY_PATH)
