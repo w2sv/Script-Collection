@@ -68,7 +68,7 @@ class KMeansClusterer:
     @staticmethod
     def _clusters_divergent(previous_clusters: _Clusters, new_clusters: _Clusters) -> bool:
         for previous_cluster_i, new_cluster_i in itertools.zip_longest(previous_clusters, new_clusters):
-            if not np.array_equal(previous_cluster_i, new_cluster_i):
+            if not np.array_equal(*map(lambda cluster: np.sort(cluster, axis=0), [previous_cluster_i, new_cluster_i])):
                 return True
         return False
 

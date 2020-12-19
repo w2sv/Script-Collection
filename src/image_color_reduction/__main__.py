@@ -18,7 +18,7 @@ def main(image_file_path: str):
 
 	# cluster rgb values being present in image
 	clusterer = KMeansClusterer(indexed_pixels, N_CLUSTERS, max_iterations=MAX_ITERATIONS, seed=SEED)
-	clusters = clusterer.__call__()
+	clusters = clusterer()
 
 	# write color reduced image
 	write_path = get_write_path(image_file_path, WRITE_DIR_PATH, n_clusters=N_CLUSTERS, conducted_iterations=clusterer.n_conducted_iterations)
