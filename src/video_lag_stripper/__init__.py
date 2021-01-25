@@ -44,7 +44,7 @@ def _rate_of_change(frame1: np.ndarray, frame2: np.ndarray) -> float:
 
 
 def get_write_path(path: str, video_format='avi') -> str:
-    """ Parameters:
+    """ Args:
             path: absolute with data format suffix
             video_format: target video format
 
@@ -61,7 +61,7 @@ def new_fps(original_fps: int, n_frames_original: int, n_frames_new: int) -> int
 
         Returns:
             original video fps reduced by what corresponds to the
-            percental change between n_frames_original and n_frames_new """
+            percentual change between n_frames_original and n_frames_new """
 
     return int(original_fps - original_fps * n_frames_new / n_frames_original)
 

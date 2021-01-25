@@ -1,7 +1,8 @@
 """ Reduce quantity of colors present in image by means of kMeans clustering the entirety
 	of rgb values present in the original image and subsequently assigning the image
 	pixels with the cluster means they ended up in.
-	Original file will be left untouched.
+	Original file will be left untouched while the thus created image will be written to
+	the directory, the former is residing in.
 
 	Refer to the bottom of this file in order to read up on the passable cli options. """
 
